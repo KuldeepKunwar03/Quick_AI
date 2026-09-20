@@ -1,28 +1,17 @@
-import { clerkClient, getAuth } from "@clerk/express";
-
-// Middleware to check userId and hasPremiumPlan
-
+// Reads the caller's provider settings off the request headers.
+//
+// Nothing is persisted, anywhere. The key arrives with each request, lives in
+// memory for the duration of that request, and is gone when it ends - it is
+// never written to the database, to Clerk metadata, to a session store or to a
+// log. Keep it that way: the UI promises the user exactly this.
 
 export const auth = async (req, res, next) => {
     try{
-        const {userId, has} = await req.auth();
-        const hasPremiumPlan = await has({plan: 'premium'})
-
-        const user = await clerkClient.users.getUser(userId)
-
-        if(!hasPremiumPlan && user.privateMetadata.free_usage){
-            req.free_usage = user.privateMetadata.free_usage
-        } else {
-            await clerkClient.users.updateUserMetadata(userId, {
-                privateMetadata: {
-                    free_usage: 0
-                }
-            })
-
-            req.free_usage = 0
+        req.userApi = {
+            key: req.get('X-Api-Key') || null,
+            baseUrl: req.get('X-Api-Base-Url') || null,
+            model: req.get('X-Api-Model') || null,
         }
-
-        req.plan = hasPremiumPlan ? 'premium' : 'free'
 
         next()
     }catch(error){
