@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
 import { Menu, X } from 'lucide-react';
 import Sidebar from '../components/Sidebar'
+import ApiKeyProvider from '../components/ApiKeyProvider'
 import { SignIn, useUser } from '@clerk/react';
 
 const Layout = () => {
@@ -12,9 +13,10 @@ const Layout = () => {
   const {user} = useUser()
 
   return user ? (
+    <ApiKeyProvider>
     <div className='flex flex-col items-start justify-start h-screen'>
 
-      <nav className='w-full px-8 min-h-14 flex item-center justify-between border-b border-gray-200'>
+      <nav className='w-full px-8 min-h-14 flex items-center justify-between border-b border-gray-200'>
         <img src={assets.logo} alt="logo"
         onClick={() => navigate('/')}
         className='cursor-pointer w-32 sm:w-44' />
@@ -31,8 +33,9 @@ const Layout = () => {
             <Outlet />
           </div>
       </div>
-      
+
     </div>
+    </ApiKeyProvider>
   ) : (
     <div className='flex items-center justify-center h-screen'>
       <SignIn />

@@ -1,23 +1,31 @@
 import { useClerk, useUser } from '@clerk/react';
-import { Eraser, FileText, Hash, House, Images, LogOut, Scissors, SquarePen, Users } from 'lucide-react';
+import { Eraser, FileText, Hash, House, Images, KeyRound, Lock, LogOut, Scissors, SquarePen, Users } from 'lucide-react';
 import React from 'react'
 import { NavLink } from 'react-router-dom';
+import { useApiKeyStatus } from '../lib/apiKeyContext';
 
+// gated: needs a saved API key, and shows a lock until there is one.
 const navItems = [
     {to: '/ai', label: 'Dashboard', Icon: House},
-    {to: '/ai/write-article', label: 'Write Article', Icon: SquarePen},
-    {to: '/ai/blog-titles', label: 'Blog Titles', Icon: Hash},
-    {to: '/ai/generate-images', label: 'Generate Images', Icon: Images},
-    {to: '/ai/remove-background', label: 'Remove Background', Icon: Eraser},
-    {to: '/ai/remove-object', label: 'Remove Object', Icon: Scissors},
-    {to: '/ai/review-resume', label: 'Review Resume', Icon: FileText},
+    {to: '/ai/write-article', label: 'Write Article', Icon: SquarePen, gated: true},
+    {to: '/ai/blog-titles', label: 'Blog Titles', Icon: Hash, gated: true},
+    {to: '/ai/generate-images', label: 'Generate Images', Icon: Images, gated: true},
+    {to: '/ai/remove-background', label: 'Remove Background', Icon: Eraser, gated: true},
+    {to: '/ai/remove-object', label: 'Remove Object', Icon: Scissors, gated: true},
+    {to: '/ai/review-resume', label: 'Review Resume', Icon: FileText, gated: true},
     {to: '/ai/community', label: 'Community', Icon: Users},
+    {to: '/ai/api-key', label: 'API Key', Icon: KeyRound},
 ]
 
 const Sidebar = ({sidebar, setSidebar}) => {
 
     const {user} = useUser()
     const {signOut, openUserProfile} = useClerk()
+    const {credentials} = useApiKeyStatus()
+
+    // In-memory only, so this is known synchronously - no loading state and no
+    // flash of the wrong icon.
+    const locked = !credentials
 
   return (
     <div
@@ -34,13 +42,17 @@ const Sidebar = ({sidebar, setSidebar}) => {
             <h1 className='mt-1 text-center'>{user.fullName}</h1>
 
             <div className='mt-3'>
-                {navItems.map(({to, label, Icon}) => (
+                {navItems.map(({to, label, Icon, gated}) => (
                     <NavLink key={to} to={to} end={to === '/ai'} onClick={() => setSidebar(false)}
-                    className={({isActive}) => `px-3.5 py-2.5 flex items-center gap-3 rounded ${isActive ? 'bg-linear-to-r from-[#3C81F6] to-[#9234EA] text-white' : 'test-gray-600'}`}>
+                    className={({isActive}) => `px-3.5 py-2.5 flex items-center gap-3 rounded ${isActive ? 'bg-linear-to-r from-[#3C81F6] to-[#9234EA] text-white' : 'text-gray-600'}`}>
                         {({ isActive }) => (
                             <>
                             <Icon className={`w-4 h-4 ${isActive ? 'text-white' : ''} `} />
-                            {label}
+                            <span className='flex-1'>{label}</span>
+                            {gated && locked && (
+                              <Lock aria-label='Locked until an API key is added'
+                              className={`w-3.5 h-3.5 ${isActive ? 'text-white/80' : 'text-gray-400'}`} />
+                            )}
                             </>
                         )}
                     </NavLink>
@@ -60,7 +72,7 @@ const Sidebar = ({sidebar, setSidebar}) => {
             <LogOut className='w-4.5 text-gray-400 hover:text-gray-700 transition cursor-pointer'
              onClick={signOut} />
         </div>
-      
+
     </div>
   )
 }

@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="md:max-w-96">
             <img className='h-9' src={assets.logo} alt="logo" />
             <p className="mt-6 text-sm">
-                Unlock creativity with QuickAi. <br />
+                Unlock creativity with nimbus.ai. <br />
                 Elevate your content with powerful AI tools — write compelling articles, design stunning visuals, and streamline your workflow effortlessly.
             </p>
         </div>
